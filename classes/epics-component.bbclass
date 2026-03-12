@@ -2,6 +2,8 @@
 # Defines common methods and rules for EPICS module recipes
 #
 
+inherit epics-functions
+
 # Default module name is the package name
 MODNAME ?= "${PN}"
 

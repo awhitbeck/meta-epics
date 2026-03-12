@@ -1,0 +1,61 @@
+record(longin, "ZCCM:BC0GEN:TRIG_COUNT") {
+    field(DESC, "External trigger count")
+}
+
+record(longin, "ZCCM:BC0GEN:BC0_COUNT") {
+    field(DESC, "BC0s received from FC link")
+}
+
+record(longin, "ZCCM:BC0GEN:BC0_FC_COUNT") {
+    field(DESC, "BC0 FC count")
+}
+
+record(longin, "ZCCM:BC0GEN:BC0_COUNTER") {
+    field(DESC, "187 MHz clocks between BC0 (mode 2)")
+}
+
+record(longin, "ZCCM:BC0GEN:LED_COUNT") {
+    field(DESC, "LED count")
+}
+
+record(longout, "ZCCM:BC0GEN:BC0_MODE") {
+    field(DESC, "BC0 mode: 0=ext trig 1=counter")
+    field(DRVL, "0")
+    field(DRVH, "1")
+}
+
+record(bi, "ZCCM:RM1:PGOOD") {
+    field(DESC, "RM1 power good")
+    field(ZNAM, "NOT_GOOD")
+    field(ONAM, "GOOD")
+}
+
+record(bo, "ZCCM:RM1:PEN") {
+    field(DESC, "RM1 power enable")
+    field(ZNAM, "DISABLE")
+    field(ONAM, "ENABLE")
+}
+
+record(bo, "ZCCM:RM1:RESET") {
+    field(DESC, "RM1 reset")
+    field(ZNAM, "NORMAL")
+    field(ONAM, "RESET")
+}
+
+record(bi, "ZCCM:RM2:PGOOD") {
+    field(DESC, "RM2 power good")
+    field(ZNAM, "NOT_GOOD")
+    field(ONAM, "GOOD")
+}
+
+record(bo, "ZCCM:RM2:PEN") {
+    field(DESC, "RM2 power enable")
+    field(ZNAM, "DISABLE")
+    field(ONAM, "ENABLE")
+}
+
+record(bo, "ZCCM:RM2:RESET") {
+    field(DESC, "RM2 reset")
+    field(ZNAM, "NORMAL")
+    field(ONAM, "RESET")
+}

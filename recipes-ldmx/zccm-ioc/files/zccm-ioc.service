@@ -1,0 +1,16 @@
+[Unit]
+Description=ZCCM softIocPVX (managed by procServ)
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/procServ \
+    --foreground \
+    --name zccm-ioc \
+    --logfile /var/log/zccm-ioc.log \
+    4050 \
+    /usr/local/bin/softIocPVX /opt/zccm-ioc/st.cmd
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+[Unit]
+Description=ZCCM register driver (managed by procServ)
+After=network.target zccm-ioc.service
+Wants=zccm-ioc.service
+
+[Service]
+# Small delay to let softIocPVX finish iocInit before the driver connects
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/bin/procServ \
+    --foreground \
+    --name zccm-driver \
+    --logfile /var/log/zccm-driver.log \
+    4051 \
+    /usr/bin/python3 /opt/zccm-ioc/zccm_driver.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

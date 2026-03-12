@@ -1,4 +1,4 @@
-inherit pypi python_setuptools_build_meta
+inherit pypi setuptools3
 
 SUMMARY = "PyEpics, a Python library for EPICS"
 LICENSE = "BSD-3-Clause"
@@ -6,12 +6,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=f113138f4249db9ba9176b8188ac2520"
 
 PYPI_PACKAGE = "pyepics"
 
-PEP517_BUILD_API = "setuptools.build_meta"
-
 DEPENDS += "\
-    python3-build-native \
-    python3-installer-native \
-    python3-wheel-native \
     python3-setuptools-native \
     python3-setuptools-scm-native \
     epics-base \

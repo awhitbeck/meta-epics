@@ -5,7 +5,7 @@ and systemd services for the LDMX zCCM EPICS IOC."
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-inherit allarch systemd
+inherit allarch
 
 SRC_URI = " \
     file://zccm.db \
@@ -18,9 +18,6 @@ SRC_URI = " \
 DEPENDS += "epics-base epics-pvxs procserv"
 RDEPENDS:${PN} += "epics-base epics-pvxs procserv python3-pyepics"
 
-SYSTEMD_SERVICE:${PN} = "zccm-ioc.service zccm-driver.service"
-SYSTEMD_AUTO_ENABLE = "enable"
-
 do_install() {
     # IOC files
     install -d ${D}/opt/zccm-ioc/db
@@ -30,14 +27,18 @@ do_install() {
     # Python driver
     install -m 0755 ${WORKDIR}/zccm_driver.py ${D}/opt/zccm-ioc/zccm_driver.py
 
-    # systemd service units
-    install -d ${D}${systemd_system_unitdir}
-    install -m 0644 ${WORKDIR}/zccm-ioc.service    ${D}${systemd_system_unitdir}/zccm-ioc.service
-    install -m 0644 ${WORKDIR}/zccm-driver.service ${D}${systemd_system_unitdir}/zccm-driver.service
+    # systemd service units + wants symlinks (same pattern as epics-base caRepeater)
+    install -d ${D}/etc/systemd/system/multi-user.target.wants
+    install -m 0644 ${WORKDIR}/zccm-ioc.service    ${D}/etc/systemd/system/zccm-ioc.service
+    install -m 0644 ${WORKDIR}/zccm-driver.service ${D}/etc/systemd/system/zccm-driver.service
+    ln -s /etc/systemd/system/zccm-ioc.service    ${D}/etc/systemd/system/multi-user.target.wants/zccm-ioc.service
+    ln -s /etc/systemd/system/zccm-driver.service ${D}/etc/systemd/system/multi-user.target.wants/zccm-driver.service
 }
 
 FILES:${PN} += " \
     /opt/zccm-ioc \
-    ${systemd_system_unitdir}/zccm-ioc.service \
-    ${systemd_system_unitdir}/zccm-driver.service \
+    /etc/systemd/system/zccm-ioc.service \
+    /etc/systemd/system/zccm-driver.service \
+    /etc/systemd/system/multi-user.target.wants/zccm-ioc.service \
+    /etc/systemd/system/multi-user.target.wants/zccm-driver.service \
 "

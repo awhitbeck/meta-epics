@@ -8,6 +8,7 @@ Wants=zccm-ioc.service
 ExecStartPre=/bin/sleep 5
 ExecStart=/usr/bin/procServ \
     --foreground \
+    --allow-kill \
     --name zccm-driver \
     --logfile /var/log/zccm-driver.log \
     4051 \

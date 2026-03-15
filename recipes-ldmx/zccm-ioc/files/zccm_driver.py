@@ -2,59 +2,62 @@
 """
 ZCCM register driver.
 
-Reads registers from /dev/axi_memory_map and pushes values into softIocPVX
-via loopback CA using pyepics.  Also monitors writable PVs and mirrors
-writes back to hardware.
+Reads registers from /dev/axi_memory_map via ioctl and pushes values into
+softIocPVX via loopback CA using pyepics.  Also monitors writable PVs and
+mirrors writes back to hardware.
 
 Register map base: 0x04_8000_0000  (ZccmApplication in _ZccmRoot.py)
+ioctl interface: DMA_Read_Register (0x100B) / DMA_Write_Register (0x100A)
+struct: uint64_t address (absolute physical), uint32_t data
 """
 
-import mmap
+import fcntl
 import os
 import struct
 import time
 import epics  # pyepics
 
 # ---------------------------------------------------------------------------
-# AXI register access
+# AXI register access via aximemorymap ioctl interface
 # ---------------------------------------------------------------------------
+#
+# The aximemorymap driver exposes registers via ioctl, not read/write/mmap.
+# Ioctl commands (from DmaDriver.h):
+#   DMA_Write_Register = 0x100A
+#   DMA_Read_Register  = 0x100B
+# Argument struct (DmaRegisterData):
+#   uint64_t address  (absolute physical address)
+#   uint32_t data
+# Total: 12 bytes, packed.
 
-AXI_BASE  = 0x04_8000_0000
-PAGE_SIZE = 0x10000  # 64 KB — one mmap window per aximemorymap page
+AXI_BASE           = 0x04_8000_0000
+DMA_WRITE_REGISTER = 0x100A
+DMA_READ_REGISTER  = 0x100B
+_REG_FMT           = '=QI'   # little-endian uint64 + uint32, no padding
 
 class AxiRegMap:
     def __init__(self, dev='/dev/axi_memory_map'):
         self.fd = os.open(dev, os.O_RDWR | os.O_SYNC)
-        self._maps = {}
-
-    def _get_map(self, page_offset):
-        if page_offset not in self._maps:
-            self._maps[page_offset] = mmap.mmap(
-                self.fd, PAGE_SIZE,
-                mmap.MAP_SHARED,
-                mmap.PROT_READ | mmap.PROT_WRITE,
-                offset=AXI_BASE + page_offset)
-        return self._maps[page_offset]
 
     def read32(self, page_offset, word_offset):
-        m = self._get_map(page_offset)
-        m.seek(word_offset)
-        return struct.unpack('<I', m.read(4))[0]
+        addr = AXI_BASE + page_offset + word_offset
+        buf = bytearray(struct.calcsize(_REG_FMT))
+        struct.pack_into(_REG_FMT, buf, 0, addr, 0)
+        fcntl.ioctl(self.fd, DMA_READ_REGISTER, buf)
+        _, data = struct.unpack_from(_REG_FMT, buf, 0)
+        return data
 
     def write32(self, page_offset, word_offset, value):
-        m = self._get_map(page_offset)
-        m.seek(word_offset)
-        m.write(struct.pack('<I', value & 0xFFFFFFFF))
+        addr = AXI_BASE + page_offset + word_offset
+        buf = bytearray(struct.pack(_REG_FMT, addr, value & 0xFFFFFFFF))
+        fcntl.ioctl(self.fd, DMA_WRITE_REGISTER, buf)
 
     def rmw32(self, page_offset, word_offset, mask, value):
-        """Read-modify-write: set bits in mask to value."""
         r = self.read32(page_offset, word_offset)
         r = (r & ~mask) | (value & mask)
         self.write32(page_offset, word_offset, r)
 
     def close(self):
-        for m in self._maps.values():
-            m.close()
         os.close(self.fd)
 
 

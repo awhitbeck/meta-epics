@@ -4,11 +4,14 @@ After=network.target zccm-ioc.service
 Wants=zccm-ioc.service
 
 [Service]
+Environment="PYEPICS_LIBCA=/opt/epics/epics-base/lib/linux-aarch64/libca.so"
+Environment="LD_LIBRARY_PATH=/opt/epics/epics-base/lib/linux-aarch64"
+Environment="EPICS_CA_ADDR_LIST=127.0.0.1"
+Environment="EPICS_CA_AUTO_ADDR_LIST=NO"
 # Small delay to let softIocPVX finish iocInit before the driver connects
 ExecStartPre=/bin/sleep 5
 ExecStart=/usr/bin/procServ \
     --foreground \
-    --allow-kill \
     --name zccm-driver \
     --logfile /var/log/zccm-driver.log \
     4051 \

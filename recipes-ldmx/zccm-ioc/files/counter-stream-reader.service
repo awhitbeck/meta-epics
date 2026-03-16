@@ -1,0 +1,22 @@
+[Unit]
+Description=ZCCM Counter Stream DMA Reader
+After=zccm-ioc.service
+Requires=zccm-ioc.service
+
+[Service]
+Environment="PYEPICS_LIBCA=/opt/epics/epics-base/lib/linux-aarch64/libca.so"
+Environment="LD_LIBRARY_PATH=/opt/epics/epics-base/lib/linux-aarch64"
+Environment="EPICS_CA_ADDR_LIST=127.0.0.1"
+Environment="EPICS_CA_AUTO_ADDR_LIST=NO"
+ExecStartPre=/bin/sleep 10
+ExecStart=/usr/bin/procServ \
+    --foreground \
+    --name counter-stream-reader \
+    --logfile /var/log/counter-stream-reader.log \
+    4052 \
+    /usr/bin/python3 /opt/zccm-ioc/counter_stream_reader.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

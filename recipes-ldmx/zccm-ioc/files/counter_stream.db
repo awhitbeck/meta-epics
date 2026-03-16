@@ -1,0 +1,9 @@
+record(waveform, "ZCCM:COUNTER:SAMPLES") {
+    field(DESC, "10 kHz counter samples")
+    field(FTVL, "ULONG")
+    field(NELM, "1000")
+}
+
+record(longin, "ZCCM:COUNTER:FRAME_COUNT") {
+    field(DESC, "DMA frames received")
+}

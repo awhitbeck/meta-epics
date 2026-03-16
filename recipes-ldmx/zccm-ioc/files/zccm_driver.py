@@ -110,9 +110,7 @@ def main():
     while True:
         try:
             # BC0 generator counters (read-only)
-            epics.caput('ZCCM:BC0GEN:TRIG_COUNT',   regs.read32(0x0B_0000, 0x0000))
             epics.caput('ZCCM:BC0GEN:BC0_COUNT',    regs.read32(0x0B_0000, 0x0004))
-            epics.caput('ZCCM:BC0GEN:BC0_FC_COUNT', regs.read32(0x0B_0000, 0x0008))
             epics.caput('ZCCM:BC0GEN:BC0_COUNTER',  regs.read32(0x0B_0000, 0x000C))
             epics.caput('ZCCM:BC0GEN:LED_COUNT',    regs.read32(0x0B_0000, 0x0010))
 

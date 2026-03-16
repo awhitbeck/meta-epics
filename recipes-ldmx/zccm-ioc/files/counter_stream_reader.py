@@ -12,7 +12,8 @@ import struct
 import epics
 
 SAMPLES_PER_FRAME = 1000
-FRAME_BYTES       = SAMPLES_PER_FRAME * 4
+WORD_BYTES        = 16    # 128-bit DMA bus = 16 bytes per AXI Stream word
+FRAME_BYTES       = SAMPLES_PER_FRAME * WORD_BYTES
 DMA_DEV           = '/dev/axi_stream_dma_0'
 PV_SAMPLES        = 'ZCCM:COUNTER:SAMPLES'
 PV_FRAME_COUNT    = 'ZCCM:COUNTER:FRAME_COUNT'
@@ -28,7 +29,9 @@ while True:
         print(f"Short read: {len(buf)} bytes (expected {FRAME_BYTES})")
         continue
 
-    samples = list(struct.unpack(f'<{SAMPLES_PER_FRAME}I', buf))
+    # Extract the 32-bit counter from the low word of each 128-bit AXI Stream word
+    words = struct.unpack(f'<{SAMPLES_PER_FRAME * 4}I', buf)  # 4 uint32 per 128-bit word
+    samples = list(words[i * 4] for i in range(SAMPLES_PER_FRAME))  # low 32 bits only
     frame_count += 1
 
     epics.caput(PV_SAMPLES,     samples,     wait=False)

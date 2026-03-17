@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/GPL-2.0-only;md5=801f80980d171d
 
 SRC_URI = " \
     file://dmaRead.cpp \
+    file://dmaFrameStream.cpp \
     file://PrbsData.cpp \
     file://PrbsData.h \
     file://DmaDriver.h \
@@ -21,11 +22,18 @@ do_compile() {
         ${S}/dmaRead.cpp \
         -o ${S}/dmaRead \
         -lpthread
+
+    ${CXX} ${CXXFLAGS} ${LDFLAGS} \
+        -I${S} \
+        ${S}/dmaFrameStream.cpp \
+        -o ${S}/dmaFrameStream \
+        -lpthread
 }
 
 do_install() {
     install -d ${D}${bindir}
-    install -m 0755 ${S}/dmaRead ${D}${bindir}/dmaRead
+    install -m 0755 ${S}/dmaRead        ${D}${bindir}/dmaRead
+    install -m 0755 ${S}/dmaFrameStream ${D}${bindir}/dmaFrameStream
 }
 
-FILES:${PN} = "${bindir}/dmaRead"
+FILES:${PN} = "${bindir}/dmaRead ${bindir}/dmaFrameStream"

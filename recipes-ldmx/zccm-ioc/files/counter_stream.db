@@ -1,9 +1,39 @@
-record(waveform, "ZCCM:COUNTER:SAMPLES") {
-    field(DESC, "10 kHz counter samples")
+record(waveform, "ZCCM:COUNTER:SAMPLES:0") {
+    field(DESC, "DMA stream 0 samples")
     field(FTVL, "ULONG")
     field(NELM, "1022")
 }
 
-record(longin, "ZCCM:COUNTER:FRAME_COUNT") {
-    field(DESC, "DMA frames received")
+record(waveform, "ZCCM:COUNTER:SAMPLES:1") {
+    field(DESC, "DMA stream 1 samples")
+    field(FTVL, "ULONG")
+    field(NELM, "1022")
+}
+
+record(waveform, "ZCCM:COUNTER:SAMPLES:2") {
+    field(DESC, "DMA stream 2 samples")
+    field(FTVL, "ULONG")
+    field(NELM, "1022")
+}
+
+record(waveform, "ZCCM:COUNTER:SAMPLES:3") {
+    field(DESC, "DMA stream 3 samples")
+    field(FTVL, "ULONG")
+    field(NELM, "1022")
+}
+
+record(longin, "ZCCM:COUNTER:FRAME_COUNT:0") {
+    field(DESC, "DMA stream 0 frames received")
+}
+
+record(longin, "ZCCM:COUNTER:FRAME_COUNT:1") {
+    field(DESC, "DMA stream 1 frames received")
+}
+
+record(longin, "ZCCM:COUNTER:FRAME_COUNT:2") {
+    field(DESC, "DMA stream 2 frames received")
+}
+
+record(longin, "ZCCM:COUNTER:FRAME_COUNT:3") {
+    field(DESC, "DMA stream 3 frames received")
 }

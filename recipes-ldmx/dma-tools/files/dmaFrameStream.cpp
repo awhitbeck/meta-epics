@@ -1,22 +1,21 @@
 /**
  * dmaFrameStream.cpp
  *
- * Reads DMA frames from /dev/axi_stream_dma_0 and writes each frame's
- * counter samples to stdout as a binary record:
+ * Reads DMA frames from /dev/axi_stream_dma_0 and writes each frame to
+ * stdout as a binary record:
  *
- *   [ uint32_t nsamples ][ uint32_t sample[0] ] ... [ uint32_t sample[nsamples-1] ]
+ *   [ uint8_t  dest             ]  -- tDest (stream index 0-3)
+ *   [ uint8_t  pad[3]           ]  -- alignment padding
+ *   [ uint32_t nsamples         ]  -- number of samples
+ *   [ uint32_t sample[0..N-1]   ]  -- counter/PRBS sample values
  *
- * Frame layout (SsiPrbsTx counter mode, PRBS_INCREMENT_G=true):
+ * Frame layout (SsiPrbsTx, 128-bit AXI Stream words):
  *   word 0  : seed (ignored)
- *   word 1  : packetLength (number of data words that follow, i.e. nsamples)
- *   word 2+ : counter values (low 32-bits of each 128-bit AXI word)
- *
- * Each 128-bit AXI word is 16 bytes = 4 x uint32_t.  The counter value sits
- * in the low word (bytes 0-3).  The driver delivers the full 128-bit words
- * so we step through the payload in 16-byte strides.
+ *   word 1  : packetLength (number of data words that follow)
+ *   word 2+ : counter/PRBS values in the low 32-bits of each 128-bit word
  *
  * Usage:
- *   dmaFrameStream            # reads from /dev/axi_stream_dma_0, all dests
+ *   dmaFrameStream                  # reads from /dev/axi_stream_dma_0, all dests
  *   dmaFrameStream -p /dev/axi_stream_dma_1
  **/
 
@@ -81,15 +80,19 @@ int main(int argc, char **argv) {
         if (ret <= 0) continue;
 
         /* Each frame word is 16 bytes wide (128-bit AXI word).
-         * Word 0 = seed, word 1 = packetLength, words 2+ = counter samples.
-         * The counter value is in the low uint32_t of each 128-bit word. */
+         * Word 0 = seed, word 1 = packetLength, words 2+ = samples.
+         * The sample value is in the low uint32_t of each 128-bit word. */
         uint32_t nwords = (uint32_t)ret / WORD_STRIDE;
         if (nwords <= HDR_WORDS) continue;
 
         uint32_t nsamples = nwords - HDR_WORDS;
         uint32_t *words   = (uint32_t *)rxData;
 
-        /* Write header: sample count */
+        /* Write record header: dest (1 byte) + pad (3 bytes) + nsamples (4 bytes) */
+        uint8_t  dest = (uint8_t)(rxDest & 0xFF);
+        uint8_t  pad[3] = {0, 0, 0};
+        if (fwrite(&dest,     sizeof(uint8_t),  1, stdout) != 1) return 0;
+        if (fwrite(pad,       sizeof(uint8_t),  3, stdout) != 3) return 0;
         if (fwrite(&nsamples, sizeof(uint32_t), 1, stdout) != 1) return 0;
 
         /* Write one uint32_t per sample (low word of each 128-bit AXI word) */

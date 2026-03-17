@@ -1,7 +1,7 @@
 record(waveform, "ZCCM:COUNTER:SAMPLES") {
     field(DESC, "10 kHz counter samples")
     field(FTVL, "ULONG")
-    field(NELM, "1000")
+    field(NELM, "1022")
 }
 
 record(longin, "ZCCM:COUNTER:FRAME_COUNT") {

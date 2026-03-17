@@ -2,40 +2,47 @@
 """
 Counter stream DMA reader.
 
-Reads 10 kHz counter frames from /dev/axi_stream_dma_0 and pushes them into
-softIocPVX via loopback CA using pyepics.  Each frame contains
-SAMPLES_PER_FRAME uint32 values; the frame rate is 10 Hz.
+Runs dmaRead as a subprocess and parses frame metadata to push
+frame count and rate into softIocPVX via loopback CA using pyepics.
 """
 
 import os
-import struct
+import re
+import subprocess
+import sys
+
+import ctypes
+
+EPICS_LIB = '/opt/epics/epics-base/lib/linux-aarch64'
+os.environ.setdefault('PYEPICS_LIBCA', f'{EPICS_LIB}/libca.so')
+
+# Pre-load EPICS dependencies so dlopen can resolve them
+ctypes.CDLL(f'{EPICS_LIB}/libCom.so', mode=ctypes.RTLD_GLOBAL)
+ctypes.CDLL(f'{EPICS_LIB}/libca.so',  mode=ctypes.RTLD_GLOBAL)
+
 import epics
 
-SAMPLES_PER_FRAME = 1000
-WORD_BYTES        = 16    # 128-bit DMA bus = 16 bytes per AXI Stream word
-FRAME_BYTES       = SAMPLES_PER_FRAME * WORD_BYTES
-DMA_DEV           = '/dev/axi_stream_dma_0'
-PV_SAMPLES        = 'ZCCM:COUNTER:SAMPLES'
-PV_FRAME_COUNT    = 'ZCCM:COUNTER:FRAME_COUNT'
+PV_FRAME_COUNT = 'ZCCM:COUNTER:FRAME_COUNT'
 
-fd = os.open(DMA_DEV, os.O_RDWR)
-frame_count = 0
+# Run dmaRead in a loop, accepting all destinations, PRBS check disabled
+proc = subprocess.Popen(
+    ['dmaRead', '--prbsdis'],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    text=True,
+    bufsize=1)
 
-print(f"Counter stream reader started — {SAMPLES_PER_FRAME} samples/frame")
+# Regex for lines like:
+# Read ret=16384, Dest=0, Fuser=0x02, Luser=0x02, prbs=0, count=45774
+pattern = re.compile(r'count=(\d+)')
 
-while True:
-    buf = os.read(fd, FRAME_BYTES)
-    if len(buf) != FRAME_BYTES:
-        print(f"Short read: {len(buf)} bytes (expected {FRAME_BYTES})")
-        continue
+print("Counter stream reader started", flush=True)
 
-    # Extract the 32-bit counter from the low word of each 128-bit AXI Stream word
-    words = struct.unpack(f'<{SAMPLES_PER_FRAME * 4}I', buf)  # 4 uint32 per 128-bit word
-    samples = list(words[i * 4] for i in range(SAMPLES_PER_FRAME))  # low 32 bits only
-    frame_count += 1
-
-    epics.caput(PV_SAMPLES,     samples,     wait=False)
-    epics.caput(PV_FRAME_COUNT, frame_count, wait=False)
-
-    if frame_count % 100 == 0:
-        print(f"Frame {frame_count}: first={samples[0]:#010x} last={samples[-1]:#010x}")
+for line in proc.stdout:
+    line = line.strip()
+    m = pattern.search(line)
+    if m:
+        count = int(m.group(1))
+        epics.caput(PV_FRAME_COUNT, count, wait=False)
+        if count % 1000 == 0:
+            print(f"Frame count: {count}", flush=True)

@@ -1,0 +1,16 @@
+[Unit]
+Description=ZCCM DMA IOC (asynPortDriver, managed by procServ)
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/procServ \
+    --foreground \
+    --name zccm-dma-ioc \
+    --logfile /var/log/zccm-dma-ioc.log \
+    4053 \
+    /usr/local/bin/softIocPVX /opt/zccm-dma-ioc/st.cmd
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

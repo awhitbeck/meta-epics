@@ -1,0 +1,63 @@
+record(waveform, "ZCCM:COUNTER:SAMPLES:0") {
+    field(DESC, "DMA stream 0 samples")
+    field(DTYP, "asynInt32ArrayIn")
+    field(INP,  "@asyn($(PORT),0,0)SAMPLES_0")
+    field(FTVL, "LONG")
+    field(NELM, "1022")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "ZCCM:COUNTER:SAMPLES:1") {
+    field(DESC, "DMA stream 1 samples")
+    field(DTYP, "asynInt32ArrayIn")
+    field(INP,  "@asyn($(PORT),0,0)SAMPLES_1")
+    field(FTVL, "LONG")
+    field(NELM, "1022")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "ZCCM:COUNTER:SAMPLES:2") {
+    field(DESC, "DMA stream 2 samples")
+    field(DTYP, "asynInt32ArrayIn")
+    field(INP,  "@asyn($(PORT),0,0)SAMPLES_2")
+    field(FTVL, "LONG")
+    field(NELM, "1022")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "ZCCM:COUNTER:SAMPLES:3") {
+    field(DESC, "DMA stream 3 samples")
+    field(DTYP, "asynInt32ArrayIn")
+    field(INP,  "@asyn($(PORT),0,0)SAMPLES_3")
+    field(FTVL, "LONG")
+    field(NELM, "1022")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "ZCCM:COUNTER:FRAME_COUNT:0") {
+    field(DESC, "DMA stream 0 frame count")
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),0,0)FRAME_COUNT_0")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "ZCCM:COUNTER:FRAME_COUNT:1") {
+    field(DESC, "DMA stream 1 frame count")
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),0,0)FRAME_COUNT_1")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "ZCCM:COUNTER:FRAME_COUNT:2") {
+    field(DESC, "DMA stream 2 frame count")
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),0,0)FRAME_COUNT_2")
+    field(SCAN, "I/O Intr")
+}
+
+record(longin, "ZCCM:COUNTER:FRAME_COUNT:3") {
+    field(DESC, "DMA stream 3 frame count")
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn($(PORT),0,0)FRAME_COUNT_3")
+    field(SCAN, "I/O Intr")
+}

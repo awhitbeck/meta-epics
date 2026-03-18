@@ -19,20 +19,27 @@ python do_configure() {
     # Generate a RELEASE.local handling all dependencies
     epics.generate_release_local(d)
 
-    # Retarget build products too, enable TIRPC
+    # Do NOT set TIRPC=YES — that causes asyn's RULES_BUILD to append
+    # -I/usr/include/tirpc (host path) which fails cross-compilation with
+    # -Werror=poison-system-directories.  Instead supply the sysroot-relative
+    # tirpc include and lib paths directly.
+    sysroot = d.getVar('RECIPE_SYSROOT')
     epics.generate_config_site(d, {
-        "TIRPC": "YES"
+        "USR_CPPFLAGS": f"-I{sysroot}/usr/include/tirpc",
+        "USR_LDFLAGS":  f"--sysroot={sysroot} -L{sysroot}/usr/lib -ltirpc",
     })
+}
+
+# Build only the asyn library, skip test apps which are not needed on target
+do_compile() {
+    make -j${BB_NUMBER_THREADS} -C asyn install
 }
 
 # Same install method as in epics-component.bbclass but we don't copy iocBoot dirs
 do_install() {
-    make -j${BB_NUMBER_THREADS} install
-
-    # Remove unnecessary test binaries from this package
-    rm -r ${D}/opt/epics/${MODNAME}/bin
+    make -j${BB_NUMBER_THREADS} -C asyn install
 
     # Remove unnecessary test libraries from this package
-    rm ${D}/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}/libtest*.a
-    rm ${D}/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}/libdevTestGpib.a
+    rm -f ${D}/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}/libtest*.a
+    rm -f ${D}/opt/epics/${MODNAME}/lib/linux-${TARGET_ARCH}/libdevTestGpib.a
 }
